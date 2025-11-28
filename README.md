@@ -238,16 +238,52 @@ export FLASK_ENV=development  # development, production, or testing
 export FLASK_DEBUG=True       # Enable/disable debug mode
 ```
 
+## Testing
+
+The project includes a comprehensive test suite with 79 tests covering all functions with 87% code coverage.
+
+### Running Tests
+
+```bash
+# Run all tests
+pytest tests/
+
+# Run with verbose output
+pytest tests/ -v
+
+# Run with coverage report
+pytest tests/ --cov=src --cov-report=term-missing
+
+# Generate HTML coverage report
+pytest tests/ --cov=src --cov-report=html
+```
+
+For detailed testing documentation, see `tests/README.md`.
+
 ## Project Structure
 
 ```
 recipe-scraper-api/
-├── app.py                 # Main Flask application
-├── config.py              # Configuration settings
-├── requirements.txt       # Python dependencies
-├── .gitignore            # Git ignore rules
-├── README.md             # This file
-└── LICENSE               # License information
+├── app.py                     # Main Flask application entry point
+├── config.py                  # Configuration settings
+├── requirements.txt           # Python dependencies
+├── .gitignore                # Git ignore rules
+├── README.md                 # Main documentation (this file)
+├── LICENSE                   # License information
+├── src/
+│   ├── __init__.py           # Package initialization
+│   ├── api.py                # Flask endpoints and API logic
+│   ├── scraper.py            # Recipe scraping functions
+│   ├── ingredients.py        # Ingredient parsing functions
+│   └── utils.py              # Utility functions
+└── tests/
+    ├── __init__.py           # Test package initialization
+    ├── conftest.py           # Pytest configuration and fixtures
+    ├── README.md             # Testing documentation
+    ├── test_api.py           # API endpoint tests
+    ├── test_scraper.py       # Scraper logic tests
+    ├── test_ingredients.py   # Ingredient parsing tests
+    └── test_utils.py         # Utility function tests
 ```
 
 ## Dependencies
