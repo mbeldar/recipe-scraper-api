@@ -1,4 +1,4 @@
-from recipe_scraper_api.api import app
+from src.api import app
 
 
 if __name__ == '__main__':
