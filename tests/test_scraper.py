@@ -22,7 +22,7 @@ class TestScrapeRecipeFromUrl:
         mock_scraper.title.return_value = "Chocolate Cake"
         mock_scraper.ingredients.return_value = ["2 cups flour", "1 egg"]
         mock_scraper.instructions.return_value = "Mix and bake"
-        mock_scraper.yields.return_value = "8 servings"
+        mock_scraper.yields.return_value = 8
         mock_scraper.prep_time.return_value = 15
         mock_scraper.cook_time.return_value = 30
         mock_scraper.total_time.return_value = 45
@@ -36,7 +36,7 @@ class TestScrapeRecipeFromUrl:
         result = scrape_recipe_from_url("https://example.com/recipe")
 
         assert result['title'] == "Chocolate Cake"
-        assert result['yields'] == "8 servings"
+        assert result['yields'] == 8
         assert result['prep_time'] == "15"
         assert result['cook_time'] == "30"
         assert result['total_time'] == "45"

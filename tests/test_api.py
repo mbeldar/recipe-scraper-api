@@ -156,7 +156,7 @@ class TestScrapeEndpoint:
                 {'quantity': 4, 'unit': None, 'name': 'eggs'}
             ],
             'instructions': ['Cook pasta', 'Mix eggs'],
-            'yields': '4 servings',
+            'yields': 4,
             'prep_time': '10',
             'cook_time': '20',
             'total_time': '30',

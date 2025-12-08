@@ -1,10 +1,14 @@
 import logging
 from flask import Flask, request, jsonify
 from .scraper import scrape_recipe_from_url, get_supported_sites, ScrapingError
+from .logging_config import setup_logging
 
 logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
+
+# Initialize logging
+setup_logging(app)
 
 
 class InvalidURLError(Exception):
@@ -18,7 +22,8 @@ def log_request():
 
 @app.after_request
 def log_response(response):
-    logger.info(f"Response: {response.status_code}")
+    url = request.args.get('url') or (request.get_json() or {}).get('url', 'N/A') if request.method == 'POST' else 'N/A'
+    logger.info(f"Response: {response.status_code} for URL: {url}")
     return response
 
 
@@ -46,13 +51,13 @@ def scrape_endpoint():
         return jsonify({'success': True, 'data': recipe_data}), 200
 
     except InvalidURLError as e:
-        logger.warning('Invalid URL error: %s', str(e))
+        logger.warning('Invalid URL error for %s: %s', url, str(e))
         return jsonify({'success': False, 'error': str(e), 'error_type': 'invalid_url'}), 400
     except ScrapingError as e:
-        logger.error('Scraping error: %s', str(e))
+        logger.error('Scraping error for %s: %s', url, str(e))
         return jsonify({'success': False, 'error': str(e), 'error_type': 'scraping_failed'}), 400
     except Exception as e:
-        logger.exception('Unexpected error during scraping')
+        logger.exception('Unexpected error during scraping for URL: %s', url)
         return jsonify({'success': False, 'error': str(e), 'error_type': 'server_error'}), 500
 
 
