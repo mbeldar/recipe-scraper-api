@@ -1,4 +1,5 @@
 import logging
+import os
 from flask import Flask, request, jsonify
 from .scraper import scrape_recipe_from_url, get_supported_sites, ScrapingError
 from .logging_config import setup_logging
@@ -10,14 +11,21 @@ app = Flask(__name__)
 # Initialize logging
 setup_logging(app)
 
+EXPECTED_KEY = os.environ.get('SECRET_API_KEY')
+if not EXPECTED_KEY:
+    raise EnvironmentError("SECRET_API_KEY environment variable not set.")
 
 class InvalidURLError(Exception):
     pass
 
 
 @app.before_request
-def log_request():
+def log_request_and_auth():
     logger.info(f"{request.method} {request.path}")
+    key = request.headers.get('X-Mobile-Api-Key')
+    
+    if not key or key != EXPECTED_KEY:
+        return jsonify({"error": "Unauthorized Access"}), 401
 
 
 @app.after_request
