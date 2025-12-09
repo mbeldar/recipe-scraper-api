@@ -39,7 +39,21 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+### Environment variables (local)
+
+You can set environment variables locally to configure the app. Example:
+
+```bash
+export FLASK_ENV=development
+export FLASK_DEBUG=1
+export SECRET_API_KEY="<GET IT FROM_ADMIN>"
+```
+
+These differ from the variables used for cloud deployment — see the "Deployment to Google Cloud (GCP)" section below for GCP-specific variables and commands.
+
 ## Running the API
+
+### Option 1: Local Development
 
 Start the development server:
 ```bash
@@ -47,6 +61,100 @@ python app.py
 ```
 
 The API will be available at `http://localhost:5000`
+
+### Option 2: Docker
+
+#### Prerequisites
+
+- Docker 20.10 or higher
+- Docker Compose 1.29 or higher
+
+#### Quick Start with Docker Compose
+
+The easiest way to run the application is using Docker Compose:
+
+```bash
+# Build and start the container
+docker-compose up --build
+
+# Or run in detached mode
+docker-compose up -d --build
+```
+
+The API will be available at `http://localhost:5000`
+
+#### View logs:
+```bash
+docker-compose logs -f recipe-scraper-api
+```
+
+#### Stop the container:
+```bash
+docker-compose down
+```
+
+#### Using Docker directly
+
+If you prefer to use Docker without Compose:
+
+```bash
+# Build the Docker image
+docker build -t recipe-scraper-api .
+
+# Run the container
+docker run -p 5000:5000 \
+  -e FLASK_ENV=production \
+  --name recipe-scraper-api \
+  recipe-scraper-api
+
+# For development with auto-reload, mount the code directory:
+docker run -p 5000:5000 \
+  -e FLASK_ENV=development \
+  -v $(pwd):/app \
+  --name recipe-scraper-api \
+  recipe-scraper-api
+```
+
+#### Useful Docker commands:
+
+```bash
+# View logs
+docker logs recipe-scraper-api
+
+# View logs in real-time
+docker logs -f recipe-scraper-api
+
+# Stop the container
+docker stop recipe-scraper-api
+
+# Remove the container
+docker rm recipe-scraper-api
+
+# View running containers
+docker ps
+
+# Remove the image
+docker rmi recipe-scraper-api
+```
+
+#### Environment Variables
+
+You can customize the application behavior using environment variables:
+
+```bash
+# Using Docker Compose (edit docker-compose.yml or set via command line)
+docker-compose up -e FLASK_ENV=development
+
+# Using Docker run
+docker run -p 5000:5000 \
+  -e FLASK_ENV=development \
+  -e FLASK_DEBUG=1 \
+  recipe-scraper-api
+```
+
+Available environment variables:
+- `FLASK_ENV`: Set to `development`, `production`, or `testing` (default: `production`)
+- `FLASK_DEBUG`: Set to `1` or `0` to enable/disable debug mode (default: `0` in production)
 
 ## API Endpoints
 
@@ -228,6 +336,71 @@ The API returns appropriate HTTP status codes and error messages:
 | 404 | not_found | Endpoint not found |
 | 405 | method_not_allowed | HTTP method not allowed |
 | 500 | server_error | Unexpected server error |
+
+## Deployment to Google Cloud (GCP)
+
+This API can be deployed to Google Cloud Run for serverless, scalable hosting.
+
+### Prerequisites
+
+- Google Cloud project with billing enabled
+- gcloud CLI installed and authenticated
+- Docker installed locally
+- Artifact Registry API enabled in your GCP project
+
+### Setup Steps
+
+1. **Set environment variables** for your GCP deployment:
+
+```bash
+export PROJECT_ID="your-gcp-project-id"
+export SECRET_API_KEY="<GET IT FROM ADMIN>"
+export REPOSITORY_NAME="cloud-run-repo"
+export SERVICE_NAME="recipe-scraper-api"
+export REGION="us-central1"
+```
+
+2. **Build and push Docker image** to Artifact Registry:
+
+```bash
+gcloud builds submit --tag $REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY_NAME/$SERVICE_NAME:version
+```
+
+3. **Deploy to Cloud Run**:
+
+```bash
+gcloud run deploy $SERVICE_NAME \
+    --image $REGION-docker.pkg.dev/$PROJECT_ID/$REPOSITORY_NAME/$SERVICE_NAME:version \
+    --region $REGION \
+    --port 5000 \
+    --platform managed \
+    --allow-unauthenticated \
+    --update-secrets SECRET_API_KEY=mobile-api-key:latest
+```
+
+### Configuration Notes
+
+- The `--allow-unauthenticated` flag allows public access to the API. Remove this flag if you need authentication.
+- The `--update-secrets` flag links your Cloud Run service to secrets stored in Google Secret Manager.
+- Update the `version` tag to match your deployment version.
+- The `REGION` variable defaults to `us-central1`; adjust as needed for your location.
+
+### Accessing Your Deployed API
+
+Once deployed, Cloud Run will provide you with a service URL like:
+```
+https://recipe-scraper-api-xxxxx.run.app
+```
+
+Use this URL to call your API endpoints:
+```bash
+curl https://recipe-scraper-api-xxxxx.run.app/health
+curl -X POST https://recipe-scraper-api-xxxxx.run.app/scrape \
+  -H "Content-Type: application/json" \
+  -d '{"url": "https://www.allrecipes.com/recipe/12345/example/"}'
+```
+
+---
 
 ## Configuration
 
