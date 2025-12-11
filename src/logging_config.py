@@ -81,9 +81,7 @@ def setup_logging(app=None, log_dir='logs'):
     
     if app:
         app.logger.handlers = []
-        app.logger.addHandler(console_handler)
-        app.logger.addHandler(error_handler)
-        app.logger.addHandler(app_handler)
         app.logger.setLevel(logging.DEBUG)
+        app.logger.propagate = True
     
     root_logger.info("Logging configured successfully. Error logs: %s", error_file_path)

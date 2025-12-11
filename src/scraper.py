@@ -20,10 +20,13 @@ def scrape_recipe_from_url(url):
         raise ScrapingError(str(e))
 
     recipe_data = {}
-
+    logger.info("Extracted title: %s", scraper.to_json())
     # title
     try:
-        recipe_data['title'] = scraper.title()
+        title = scraper.title()
+        
+        # Handle None or empty values gracefully
+        recipe_data['title'] = title if title else None
     except Exception:
         logger.exception("Error extracting title from %s", url)
         recipe_data['title'] = None
@@ -84,14 +87,11 @@ def scrape_recipe_from_url(url):
     try:
         recipe_data['cook_time'] = str(scraper.cook_time()) if scraper.cook_time() else None
     except Exception:
-        logger.exception("Error extracting cook_time from %s", url)
-        recipe_data['cook_time'] = None
-
-    try:
-        recipe_data['total_time'] = str(scraper.total_time()) if scraper.total_time() else None
-    except Exception:
-        logger.exception("Error extracting total_time from %s", url)
-        recipe_data['total_time'] = None
+        try:
+            recipe_data['cook_time'] = str(scraper.total_time()) if scraper.total_time() else None
+        except Exception:
+            logger.exception("Error extracting cook_time from %s", url)
+            recipe_data['cook_time'] = None
 
     try:
         recipe_data['image'] = scraper.image()
