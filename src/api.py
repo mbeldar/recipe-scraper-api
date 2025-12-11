@@ -11,7 +11,10 @@ app = Flask(__name__)
 # Initialize logging
 setup_logging(app)
 
+CONTAINER_VERSION = os.environ.get("APP_VERSION", "N/A (Untagged)")
+
 EXPECTED_KEY = os.environ.get('SECRET_API_KEY')
+
 if not EXPECTED_KEY:
     raise EnvironmentError("SECRET_API_KEY environment variable not set.")
 
@@ -37,7 +40,8 @@ def log_response(response):
 
 @app.route('/health', methods=['GET'])
 def health_check():
-    return jsonify({'status': 'healthy', 'message': 'Recipe Scraper API is running'}), 200
+    return jsonify({'status': 'healthy', 
+                    'message': f'Recipe Scraper API is running (Version: {CONTAINER_VERSION})'}), 200
 
 
 @app.route('/scrape', methods=['POST'])

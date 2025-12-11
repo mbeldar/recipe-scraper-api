@@ -1,0 +1,5 @@
+Flask==3.0.0
+recipe-scrapers==14.38.0
+Werkzeug==3.0.1
+ingredient-parser-nlp==2.1.0
+requests==2.31.0

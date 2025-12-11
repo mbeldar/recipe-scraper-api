@@ -1,34 +1,29 @@
-# Use Python 3.10 slim image as base
-FROM python:3.10-slim
-
-# Set working directory in container
+FROM python:3.10-alpine as builder
+ARG APP_VERSION=dev_build
 WORKDIR /app
 
-# Set environment variables
+RUN apk update && apk add --no-cache \
+    build-base \
+    && rm -rf /var/cache/apk/*
+
+COPY requirements-prod.txt .
+
+RUN pip install --no-cache-dir -r requirements-prod.txt
+
+FROM python:3.10-alpine as final
+ENV APP_VERSION=$APP_VERSION
+WORKDIR /app
+
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1
+    PYTHONDONTWRITEBYTECODE=1
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
+COPY --from=builder /usr/local/lib/python3.10/site-packages /usr/local/lib/python3.10/site-packages
 
-# Copy requirements file
-COPY requirements.txt .
-
-# Install Python dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy application code
 COPY . .
 
-# Expose port
 EXPOSE 5000
 
-# Set the default environment
 ENV FLASK_ENV=production
 ENV SECRET_API_KEY=not_set_in_dockerfile
 
-# Run the application
 CMD ["python", "app.py"]
